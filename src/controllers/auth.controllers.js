@@ -6,7 +6,7 @@ import {
   emailVerificationMailgenContent,
   sendEmail,
 } from "../utils/mail.js";
-
+import jwt  from "jsonwebtoken";
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -244,7 +244,8 @@ if (isEmailVerified)
       "mail has been sent to your email id "
     )
   )
-})
+});
+
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies.refreshToken || req.body.refreshToken;
