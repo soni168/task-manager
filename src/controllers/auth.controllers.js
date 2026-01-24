@@ -183,8 +183,9 @@ let hashedToken = crypto
 
 const user  = await User.findOne({
   emailVerificationToken:hashedToken,
-  emailVerificationExpiry:{$gt:Date.now()},
+  emailVerificationExpiry:{$gt: Date.now()},
 });
+
 if(!user){
   throw new ApiError(400,"Token is invalid or expired")
 
@@ -220,7 +221,7 @@ if (user.isEmailVerified)
 {
   throw new ApiError(404,"user is already verified")
 }
-  const { unhashedToken, hashedToken, tokenExpiry } =
+  const { unhashedToken, hashedToken , tokenExpiry } =
     user.generateTemporaryToken();
 
   user.emailVerificationToken = hashedToken;
@@ -236,7 +237,6 @@ if (user.isEmailVerified)
       `${req.protocol}://${req.get("host")}/api/v1/users/verify-email/${unhashedToken}`
     ),
   });
-  console.log("Hashed from URL:", hashedToken);
   return res 
   .status(200)
   .json(
