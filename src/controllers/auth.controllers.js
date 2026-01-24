@@ -5,7 +5,9 @@ import { ApiError } from "../utils/api-error.js";
 import {
   emailVerificationMailgenContent,
   sendEmail,
+  forgotPasswordMailgenContent
 } from "../utils/mail.js";
+import crypto from "crypto";
 import jwt  from "jsonwebtoken";
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -168,8 +170,7 @@ return res
 });
 
 const verifyEmail = asyncHandler(async(req,res)=>{
-const {verificationToken}=req.params
-
+const { verificationToken } = req.params;
 
 if(!verificationToken){
   throw new ApiError(400,"Email verification is missing")
@@ -182,16 +183,16 @@ let hashedToken = crypto
 
 const user  = await User.findOne({
   emailVerificationToken:hashedToken,
-  emailVerificationExpiry:{$gt:Date.now()}
-})
+  emailVerificationExpiry:{$gt:Date.now()},
+});
 if(!user){
   throw new ApiError(400,"Token is invalid or expired")
 
 }
 user.emailVerificationToken=undefined;
 user.emailVerificationExpiry=undefined;
-user.isEmailVerified = true 
-await user.save ({validateBeforeSave:false})
+user.isEmailVerified = true ;
+await user.save ({validateBeforeSave:false});
 
 return res
 .status(200)
@@ -200,11 +201,11 @@ return res
   200,
   {
     isEmailVerified: true
-    
+  
 },
 "YOUR EMAIL IS VERIFIED",
-)
-)
+),
+);
 });
 
 const resendEmailVerification = asyncHandler(async(req,res)=>{
@@ -215,7 +216,7 @@ if(!user){
   throw new ApiError(404,"user doesnot exist")
 }
 
-if (isEmailVerified)
+if (user.isEmailVerified)
 {
   throw new ApiError(404,"user is already verified")
 }
@@ -235,6 +236,7 @@ if (isEmailVerified)
       `${req.protocol}://${req.get("host")}/api/v1/users/verify-email/${unhashedToken}`
     ),
   });
+  console.log("Hashed from URL:", hashedToken);
   return res 
   .status(200)
   .json(
@@ -305,12 +307,11 @@ const forgotPasswordRequest = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User does not exists", []);
   }
 
-  const { unHashedToken, hashedToken, tokenExpiry } =
+  const { unhashedToken, hashedToken, tokenExpiry } =
     user.generateTemporaryToken();
 
   user.forgotPasswordToken = hashedToken;
   user.forgotPasswordExpiry = tokenExpiry;
-
   await user.save({ validateBeforeSave: false });
 
   await sendEmail({
@@ -318,7 +319,7 @@ const forgotPasswordRequest = asyncHandler(async (req, res) => {
     subject: "Password reset request",
     mailgenContent: forgotPasswordMailgenContent(
       user.username,
-      `${process.env.FORGOT_PASSWORD_REDIRECT_URL}/${unHashedToken}`,
+      `${process.env.FORGOT_PASSWORD_REDIRECT_URL}/${unhashedToken}`,
     ),
   });
 

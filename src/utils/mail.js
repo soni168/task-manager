@@ -23,11 +23,11 @@ const transporter= nodemailer.createTransport({
     pass:process.env.MAILTRAP_SMTP_PASS,
   },
 });
-const mail={
+const mail ={
   from:"mail.taskmanager@example.com",
-  to : options.email,
+  to:options.email,
   subject:options.subject,
-  text: emailTextual,
+  text:emailTextual,
   html:emailHtml,
 };
 try{
@@ -37,12 +37,11 @@ catch(error){
   console.error("Email service failed. make sure that you provide your mailtrap credentials in .env file.");
   console.error("Error:",error);
 
-
 }
 
 };
 
-const emailVerificationMailgenContent = (username, verficationUrl) => {
+const emailVerificationMailgenContent = (username, verificationUrl) => {
   return {
     body: {
       name: username,
@@ -53,7 +52,7 @@ const emailVerificationMailgenContent = (username, verficationUrl) => {
         button: {
           color: "#22BC66",
           text: "Verify your email",
-          link: verficationUrl,
+          link: verificationUrl,
         },
       },
       outro:
